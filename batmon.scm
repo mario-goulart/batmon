@@ -14,6 +14,11 @@
 
 (define max-db-items 50000)
 
+(define base-data-dir
+  (make-parameter
+   (make-pathname (list (get-environment-variable "HOME") ".cache")
+                  "batmon-data")))
+
 (define (list-battery-dirs)
   (glob "/sys/class/power_supply/BAT*"))
 
@@ -28,14 +33,14 @@
           capacity
           (string->symbol (string (string-ref status 0))))))
 
-(define (mainloop poll-interval base-data-dir)
-  (create-directory base-data-dir 'parents)
+(define (mainloop poll-interval)
+  (create-directory (base-data-dir) 'parents)
   (let loop ()
     (let ((battery-dirs (list-battery-dirs)))
       (for-each
        (lambda (battery-dir)
          (let* ((battery (pathname-file battery-dir))
-                (db-file (make-pathname base-data-dir battery "db"))
+                (db-file (make-pathname (base-data-dir) battery "db"))
                 (db-data (handle-exceptions exn
                            '()
                            (with-input-from-file db-file read-list)))
@@ -94,17 +99,14 @@ EOF
             (member "--help" args))
     (usage 0))
 
-  (let ((poll-interval 120)
-        (data-dir
-         (make-pathname (list (get-environment-variable "HOME") ".cache")
-                        "batmon-data")))
+  (let ((poll-interval 120))
     (let loop ((args (command-line-arguments)))
       (unless (null? args)
         (let ((arg (car args)))
           (cond ((or (string=? arg "--data-dir") (string=? arg "-d"))
                  (when (null? (cdr args))
                    (die! "--data-dir requires an argument"))
-                 (set! data-dir (cadr args))
+                 (base-data-dir (cadr args))
                  (loop (cddr args)))
                 ((or (string=? arg "--poll-interval") (string=? arg "-p"))
                  (when (null? (cdr args))
@@ -117,6 +119,6 @@ EOF
                    (loop (cddr args))))
                 (else
                  (die! "Invalid parameter: ~a" arg))))))
-    (mainloop poll-interval data-dir)))
+    (mainloop poll-interval)))
 
 ) ;; end module
