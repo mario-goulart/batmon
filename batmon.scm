@@ -18,7 +18,9 @@
 (define base-data-dir
   (make-parameter
    (make-pathname (list (get-environment-variable "HOME") ".cache")
-                  "batmon-data")))
+                  "batmon-data")
+   (lambda (dir)
+     (create-directory dir 'parents))))
 
 (define poll-interval
   (make-parameter 120))
