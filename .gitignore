@@ -1,0 +1,8 @@
+*.build.sh
+*.import.scm
+*.so
+*.install.sh
+*.link
+*.static.o
+batmon-plot
+batmon-prog
