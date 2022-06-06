@@ -12,7 +12,8 @@
         (chicken time posix))
 (import srfi-1)
 
-(define max-db-items 50000)
+(define max-db-items
+  (make-parameter 50000))
 
 (define base-data-dir
   (make-parameter
@@ -46,7 +47,7 @@
                            (with-input-from-file db-file read-list)))
                 (num-db-items (length db-data))
                 (sample (read-battery-data battery-dir)))
-           (if (< num-db-items (sub1 max-db-items))
+           (if (< num-db-items (sub1 (max-db-items)))
                (with-output-to-file db-file
                  (lambda ()
                    (write sample)
@@ -57,7 +58,7 @@
                    (for-each (lambda (item)
                                (write item)
                                (newline))
-                             (append (take-right db-data (sub1 max-db-items))
+                             (append (take-right db-data (sub1 (max-db-items)))
                                      (list sample))))))))
        battery-dirs))
     (sleep poll-interval)
