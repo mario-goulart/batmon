@@ -1,4 +1,4 @@
-(module batmon ()
+(module batmon-prog ()
 
 (import (scheme)
         (chicken base)
