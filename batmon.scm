@@ -34,32 +34,39 @@
           capacity
           (string->symbol (string (string-ref status 0))))))
 
+(define (update-db! battery-dir sample)
+  ;; sample => (<seconds> <capacity> <char>), where <char> is a
+  ;; one-letter symbol:
+  ;; * C => Charging
+  ;; * D => Discharging
+  ;; * U => Unknown
+  (let* ((battery (pathname-file battery-dir))
+         (db-file (make-pathname (base-data-dir) battery "db"))
+         (db-data (handle-exceptions exn
+                    '()
+                    (with-input-from-file db-file read-list)))
+         (num-db-items (length db-data)))
+    (if (< num-db-items (sub1 (max-db-items)))
+        (with-output-to-file db-file
+          (lambda ()
+            (write sample)
+            (newline))
+          append:)
+        (with-output-to-file db-file
+          (lambda ()
+            (for-each (lambda (item)
+                        (write item)
+                        (newline))
+                      (append (take-right db-data (sub1 (max-db-items)))
+                              (list sample))))))))
+
 (define (mainloop poll-interval)
   (create-directory (base-data-dir) 'parents)
   (let loop ()
     (let ((battery-dirs (list-battery-dirs)))
       (for-each
        (lambda (battery-dir)
-         (let* ((battery (pathname-file battery-dir))
-                (db-file (make-pathname (base-data-dir) battery "db"))
-                (db-data (handle-exceptions exn
-                           '()
-                           (with-input-from-file db-file read-list)))
-                (num-db-items (length db-data))
-                (sample (read-battery-data battery-dir)))
-           (if (< num-db-items (sub1 (max-db-items)))
-               (with-output-to-file db-file
-                 (lambda ()
-                   (write sample)
-                   (newline))
-                 append:)
-               (with-output-to-file db-file
-                 (lambda ()
-                   (for-each (lambda (item)
-                               (write item)
-                               (newline))
-                             (append (take-right db-data (sub1 (max-db-items)))
-                                     (list sample))))))))
+         (update-db! battery-dir (read-battery-data battery-dir)))
        battery-dirs))
     (sleep poll-interval)
     (loop)))
