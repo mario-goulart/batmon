@@ -5,6 +5,8 @@
  (category tools)
  (dependencies srfi-1 srfi-13)
  (components
+  (extension batmon)
   (program batmon-prog
-           (install-name batmon))
+           (install-name batmon)
+           (component-dependencies batmon))
   (program batmon-plot)))
