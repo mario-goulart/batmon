@@ -1,0 +1,9 @@
+;; -*- scheme -*-
+((synopsis "Battery statistics for Linux")
+ (author "Mario Domenech Goulart")
+ (license "BSD")
+ (category tools)
+ (dependencies srfi-1 srfi-13)
+ (components
+  (program batmon)
+  (program batmon-plot)))
