@@ -20,6 +20,9 @@
    (make-pathname (list (get-environment-variable "HOME") ".cache")
                   "batmon-data")))
 
+(define poll-interval
+  (make-parameter 120))
+
 (define (list-battery-dirs)
   (glob "/sys/class/power_supply/BAT*"))
 
